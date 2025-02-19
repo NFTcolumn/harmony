@@ -8,30 +8,35 @@ const canvas = document.getElementById('colorSpace');
 const ctx = canvas.getContext('2d');
 const frequencyDisplay = document.getElementById('frequencyDisplay');
 
-// Set up canvas and create color gradient
+// Set up canvas and create color picker
 function setupCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     
-    // Create full spectrum gradient including black and white
-    const gradient = ctx.createRadialGradient(
-        canvas.width / 2, canvas.height / 2, 0,
-        canvas.width / 2, canvas.height / 2, canvas.width / 1.5
-    );
+    // Create main color area (saturation x value)
+    const mainGradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
     
-    // Center (white) to outer edge (creating a circular spectrum)
-    gradient.addColorStop(0, '#FFFFFF');    // White
-    gradient.addColorStop(0.2, '#FF0000');  // Red
-    gradient.addColorStop(0.3, '#FF7F00');  // Orange
-    gradient.addColorStop(0.4, '#FFFF00');  // Yellow
-    gradient.addColorStop(0.5, '#00FF00');  // Green
-    gradient.addColorStop(0.6, '#0000FF');  // Blue
-    gradient.addColorStop(0.7, '#4B0082');  // Indigo
-    gradient.addColorStop(0.8, '#9400D3');  // Violet
-    gradient.addColorStop(1, '#000000');    // Black
+    // Add colors for the rainbow spectrum
+    mainGradient.addColorStop(0, '#ff0000');   // Red
+    mainGradient.addColorStop(0.17, '#ff8000'); // Orange
+    mainGradient.addColorStop(0.33, '#ffff00'); // Yellow
+    mainGradient.addColorStop(0.5, '#00ff00');  // Green
+    mainGradient.addColorStop(0.67, '#0000ff'); // Blue
+    mainGradient.addColorStop(0.83, '#4b0082'); // Indigo
+    mainGradient.addColorStop(1, '#9400d3');    // Violet
     
-    // Fill canvas with gradient
-    ctx.fillStyle = gradient;
+    // Fill the canvas with the color gradient
+    ctx.fillStyle = mainGradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Add white to black vertical gradient overlay
+    const valueGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    valueGradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+    valueGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0)');
+    valueGradient.addColorStop(0.5, 'rgba(0, 0, 0, 0)');
+    valueGradient.addColorStop(1, 'rgba(0, 0, 0, 1)');
+    
+    ctx.fillStyle = valueGradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
@@ -67,22 +72,20 @@ function updateFrequency(x, y) {
     }
 }
 
-// Convert RGB to frequency (simplified mapping)
+// Convert RGB to frequency
 function rgbToFrequency(r, g, b) {
-    // Calculate luminance using sRGB luminance formula
-    const luminance = Math.sqrt(
-        0.299 * (r * r) +
-        0.587 * (g * g) +
-        0.114 * (b * b)
-    ) / Math.sqrt(255 * 255);
+    // Calculate relative position in the color space
+    const x = r / 255; // Horizontal position (hue/saturation)
+    const y = b / 255; // Vertical position (brightness)
     
-    // Map luminance to frequency range (0Hz - 20000Hz)
-    // Using power curve for more natural frequency distribution
-    const frequency = Math.pow(luminance, 2) * 20000;
+    // Map x and y coordinates to frequency
+    // x determines base frequency range (100Hz - 15000Hz)
+    // y determines final frequency (0Hz - 20000Hz)
+    const baseFreq = 100 + (x * 14900);
+    const finalFreq = y * 20000;
     
-    // Ensure we hit the full range (0-20000)
-    if (r === 255 && g === 255 && b === 255) return 20000;
-    if (r === 0 && g === 0 && b === 0) return 0;
+    // Blend between base frequency and final frequency
+    const frequency = Math.min(20000, Math.max(0, (baseFreq + finalFreq) / 2));
     
     return Math.round(frequency);
 }
