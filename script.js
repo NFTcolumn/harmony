@@ -79,13 +79,13 @@ function rgbToFrequency(r, g, b) {
     const y = b / 255; // Vertical position (brightness)
     
     // Map x and y coordinates to frequency
-    // x determines base frequency range (0Hz - 7500Hz)
-    // y determines final frequency (0Hz - 10000Hz)
-    const baseFreq = x * 7500;
-    const finalFreq = y * 10000;
+    // x determines base frequency range (1Hz - 2500Hz)
+    // y determines final frequency (1Hz - 5000Hz)
+    const baseFreq = 1 + (x * 2499);  // Start at 1Hz
+    const finalFreq = 1 + (y * 4999);  // Start at 1Hz
     
     // Blend between base frequency and final frequency
-    const frequency = Math.min(10000, Math.max(0, (baseFreq + finalFreq) / 2));
+    const frequency = Math.min(5000, Math.max(1, (baseFreq + finalFreq) / 2));
     
     return Math.round(frequency);
 }
