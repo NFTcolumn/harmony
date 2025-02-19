@@ -69,11 +69,21 @@ function updateFrequency(x, y) {
 
 // Convert RGB to frequency (simplified mapping)
 function rgbToFrequency(r, g, b) {
-    // Calculate perceived brightness (weighted RGB values)
-    const brightness = (r * 0.299 + g * 0.587 + b * 0.114) / 255;
+    // Calculate luminance using sRGB luminance formula
+    const luminance = Math.sqrt(
+        0.299 * (r * r) +
+        0.587 * (g * g) +
+        0.114 * (b * b)
+    ) / Math.sqrt(255 * 255);
     
-    // Map brightness to frequency range (0Hz - 20000Hz for full human hearing range)
-    const frequency = brightness * 20000;
+    // Map luminance to frequency range (0Hz - 20000Hz)
+    // Using power curve for more natural frequency distribution
+    const frequency = Math.pow(luminance, 2) * 20000;
+    
+    // Ensure we hit the full range (0-20000)
+    if (r === 255 && g === 255 && b === 255) return 20000;
+    if (r === 0 && g === 0 && b === 0) return 0;
+    
     return Math.round(frequency);
 }
 
