@@ -74,18 +74,13 @@ function updateFrequency(x, y) {
 
 // Convert RGB to frequency
 function rgbToFrequency(r, g, b) {
-    // Calculate relative position in the color space
-    const x = r / 255; // Horizontal position (hue/saturation)
-    const y = b / 255; // Vertical position (brightness)
+    // Use brightness (b value) to determine frequency
+    // When b is 0 (black), frequency will be 0 Hz
+    // When b is 255 (white), frequency will be 20000 Hz
+    const brightness = b / 255;
     
-    // Map x and y coordinates to frequency
-    // x determines base frequency range (100Hz - 15000Hz)
-    // y determines final frequency (0Hz - 20000Hz)
-    const baseFreq = 100 + (x * 14900);
-    const finalFreq = y * 20000;
-    
-    // Blend between base frequency and final frequency
-    const frequency = Math.min(20000, Math.max(0, (baseFreq + finalFreq) / 2));
+    // Direct mapping from brightness to frequency
+    const frequency = brightness * 20000;
     
     return Math.round(frequency);
 }
